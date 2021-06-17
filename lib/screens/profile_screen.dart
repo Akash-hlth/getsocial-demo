@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:getstream_af/widgets/activity_card.dart';
 import 'package:getstream_af/widgets/dialog.dart';
 import 'package:stream_feed/stream_feed.dart';
 
@@ -14,12 +15,30 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late final StreamFeedClient _client;
+  bool _isLoading = true;
+
+  List<Activity> myActivities = <Activity>[];
+  Future<void> _loadActivities({bool pullToRefresh = false}) async {
+    if (!pullToRefresh) setState(() => _isLoading = true);
+
+    // set the stream to fetch the feeds of user
+    // this first argument chooses the feed-type "user" ;
+    // the second argument specifies the Id of current streamUser
+    final userFeed = _client.flatFeed('user', widget.streamUser.id!);
+
+    // using the userFeed we can access all the activities
+    final activitesData = await userFeed.getActivities();
+
+    if (!pullToRefresh) _isLoading = false;
+    setState(() => myActivities = activitesData);
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // the client updates after each login
     _client = context.client;
+    _loadActivities();
   }
 
   @override
@@ -27,13 +46,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(title: Text('My Feeds')),
       body: Center(
-        child: Column(
-          children: [
-            Container(
-              child: Text('My feeds here'),
-            ),
-          ],
-        ),
+        child: _isLoading
+            ? CircularProgressIndicator()
+            : myActivities.isEmpty
+                ? Text('No activities yet!')
+                : ListView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: myActivities.length,
+                    itemBuilder: (_, index) {
+                      final activity = myActivities[index];
+                      return Card(
+                          elevation: 15,
+                          child: ActivityCard(activity: activity));
+                    },
+                  ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.message_outlined),
@@ -64,6 +90,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // add single activity for the current streamuser
             await userFeed.addActivity(activity);
+
+            //load all the activities
+            _loadActivities();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Message Feed Cant Be Empty'),
+              ),
+            );
           }
         },
       ),
