@@ -18,7 +18,7 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          ProfileScreen(),
+          ProfileScreen(streamUser: widget.streamUser),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
