@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:getstream_af/screens/people_screen.dart';
 import 'package:getstream_af/screens/profile_screen.dart';
+import 'package:getstream_af/screens/timeline_screen.dart';
 import 'package:stream_feed/stream_feed.dart';
 
 class BottomBarScreen extends StatefulWidget {
@@ -18,7 +20,9 @@ class _BottomBarScreenState extends State<BottomBarScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
+          TimeLineScreen(streamUser: widget.streamUser),
           ProfileScreen(streamUser: widget.streamUser),
+          PeopleScreen(streamUser: widget.streamUser),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

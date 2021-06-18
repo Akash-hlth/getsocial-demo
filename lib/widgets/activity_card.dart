@@ -9,8 +9,11 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = UserDataProvider.usersData.firstWhere(
-        (user) => createUserReference(user['id'].toString()) == activity.actor);
+    // print('Activity : ' + activity.toString());
+    final user = UserDataProvider.usersData.firstWhere((element) {
+      // print(element);
+      return createUserReference(element['id'].toString()) == activity.actor;
+    });
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),

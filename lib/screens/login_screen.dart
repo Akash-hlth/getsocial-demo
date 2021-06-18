@@ -38,12 +38,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     final client = await loginUser(context);
 
                     print(client);
-                    final user = await client
-                        .setUser({'userName': userNameController.text});
+                    final user =
+                        await client.setUser({'name': userNameController.text});
 
                     // the client provider wrapper helps to
                     // pass the client over the screens
-                    Navigator.of(context).pushReplacement(
+                    Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => ClientProvider(
                           client: client,
