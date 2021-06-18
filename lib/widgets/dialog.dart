@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 
 class AddMessageDialog extends StatefulWidget {
+  final String oldMsg;
+  AddMessageDialog({this.oldMsg = ''});
   @override
   _AddMessageDialogState createState() => _AddMessageDialogState();
 }
 
 class _AddMessageDialogState extends State<AddMessageDialog> {
   final _activityController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.oldMsg != '') {
+      _activityController.text = widget.oldMsg;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

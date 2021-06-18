@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:getstream_af/provider/userdata_provider.dart';
 import 'package:stream_feed/stream_feed.dart';
 
-class ActivityCard extends StatelessWidget {
+class ProfileActivityCard extends StatelessWidget {
   final Activity activity;
+  final Function removeActivity;
+  final Function updateActivity;
 
-  const ActivityCard({
+  const ProfileActivityCard({
     Key? key,
     required this.activity,
+    required this.removeActivity,
+    required this.updateActivity,
   }) : super(key: key);
 
   @override
@@ -37,6 +41,19 @@ class ActivityCard extends StatelessWidget {
                   ],
                 ),
               ),
+              Column(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () => updateActivity(
+                        activity.id, activity.extraData!['text']),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () => removeActivity(activity.id),
+                  ),
+                ],
+              )
             ],
           ),
           SizedBox(height: 10),

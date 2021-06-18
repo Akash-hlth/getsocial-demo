@@ -1,0 +1,15 @@
+For Following a user
+
+Current user flatfeed is used 
+
+and 
+
+Add to Follower : 
+
+Create A timeline Channel on current user
+Select User to be followed
+Add follow to timeline on user
+
+So on timeline channel => follows -> user:followed user
+
+So on user Channel => following -> timeline:user
