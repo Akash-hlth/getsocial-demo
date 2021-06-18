@@ -97,22 +97,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // Future<String?> fetchMessage() async {
-  //   final message = await showDialog<String>(
-  //     context: context,
-  //     builder: (_) => AddMessageDialog(),
-  //   );
-
-  //   return message;
-  // }
-
   Future postActivity(String message) async {
     // create the activity for the message
     // actor refers to the msg creator
+    int fId = 0;
     final activity = Activity(
         actor: createUserReference(widget.streamUser.id!),
         verb: 'text',
         object: '1',
+        time: DateTime.now(),
+        foreignId: 'msg:$fId',
         extraData: {
           'text': message,
         });
@@ -122,6 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // add single activity for the current streamuser
     await userFeed.addActivity(activity);
+    fId += 1;
   }
 
   Future removeActivity(String activityId) async {
@@ -142,15 +137,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (msgUpdated != null) {
       print('ActivityId : ' + activityId);
+      print('UserId : ' + widget.streamUser.id!);
+      print(_client.currentUser!.userId);
 
-      final userFeed = _client.flatFeed('user', widget.streamUser.id!);
-      final res = await userFeed.updateActivityById(
-        id: activityId,
-        set: {'text': msgUpdated},
-      );
-      print(res);
+      final userFeed1 = _client.flatFeed('user', 'user1');
 
-      _loadActivities();
+      try {
+        final res = await userFeed1.updateActivityById(
+          id: activityId,
+          set: {'text': msgUpdated},
+        );
+        print('Update Result : ');
+        print(res);
+        _loadActivities();
+      } catch (e) {
+        print("Error Updating");
+        print(e);
+      }
     }
 
     print("Updated Activity Here");
