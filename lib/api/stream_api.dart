@@ -7,6 +7,7 @@ class StreamApi {
     var serverClient = StreamFeedClient.connect(
       Config.apiKey,
       secret: Config.secret,
+      appId: '1129273',
       runner: Runner.server,
       options: StreamHttpClientOptions(
         location: Location.usEast,

@@ -18,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
 
   List<Activity> myActivities = <Activity>[];
+  List<EnrichedActivity> myReactions = <EnrichedActivity>[];
 
   Future<void> _loadActivities({bool pullToRefresh = false}) async {
     if (!pullToRefresh) setState(() => _isLoading = true);
@@ -34,42 +35,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => myActivities = activitesData);
   }
 
+  Future<void> _loadReactions({bool pullToRefresh = false}) async {
+    if (!pullToRefresh) setState(() => _isLoading = true);
+
+    final res = await _client
+        .flatFeed('timeline', widget.streamUser.id!)
+        .getEnrichedActivities(
+            flags: EnrichmentFlags()
+                .withOwnReactions()
+                .withRecentReactions()
+                .withReactionCounts());
+
+    // fetch the list where the user has liked the message
+    List<EnrichedActivity> ownerReactions = res
+        .where((element) => element.ownReactions!.containsKey('like'))
+        .toList();
+    print(ownerReactions[0].object);
+    if (!pullToRefresh) _isLoading = false;
+    setState(() => myReactions = ownerReactions);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // the client updates after each login
     _client = context.client;
     _loadActivities();
+    _loadReactions();
   }
 
   @override
   Widget build(BuildContext context) {
-    final userFeed = _client.flatFeed('user', widget.streamUser.id!);
     return Scaffold(
       appBar: AppBar(title: Text('My Feeds')),
-      body: Center(
-        child: _isLoading
-            ? CircularProgressIndicator()
-            : myActivities.isEmpty
-                ? Text('No activities yet!')
-                : ListView.builder(
-                    padding: const EdgeInsets.all(10),
-                    itemCount: myActivities.length,
-                    itemBuilder: (_, index) {
-                      final activity = myActivities[index];
-                      final userFeed =
-                          _client.flatFeed('user', widget.streamUser.id!);
-
-                      return Card(
-                        elevation: 15,
-                        child: ProfileActivityCard(
-                          activity: activity,
-                          removeActivity: removeActivity,
-                          updateActivity: updateActivity,
-                        ),
-                      );
-                    },
+      body: RefreshIndicator(
+        onRefresh: () => _loadReactions(pullToRefresh: true),
+        child: Center(
+          child: _isLoading
+              ? CircularProgressIndicator()
+              : Column(children: [
+                  if (myActivities.isEmpty) Text('No activities yet!'),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(10),
+                      itemCount: myActivities.length,
+                      itemBuilder: (_, index) {
+                        final activity = myActivities[index];
+                        return Card(
+                          elevation: 15,
+                          child: ProfileActivityCard(
+                            activity: activity,
+                            removeActivity: removeActivity,
+                            updateActivity: updateActivity,
+                          ),
+                        );
+                      },
+                    ),
                   ),
+                  if (myReactions.isEmpty) Text('No Like Reactions yet!'),
+                  Text('Refresh to get latest Reactions'),
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(10),
+                      itemCount: myReactions.length,
+                      itemBuilder: (_, index) {
+                        final reaction = myReactions[index];
+
+                        return Card(
+                          elevation: 15,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: ListTile(
+                              title: Text(
+                                  'Liked ${reaction.latestReactions!['like']![0].userId} Activity'),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                      'Activity : ${reaction.extraData!['text']}')
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ]),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.message_outlined),
@@ -140,7 +193,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       print('UserId : ' + widget.streamUser.id!);
       print(_client.currentUser!.userId);
 
-      final userFeed1 = _client.flatFeed('user', 'user1');
+      final userFeed1 = _client.flatFeed('user', _client.currentUser!.userId);
 
       try {
         final res = await userFeed1.updateActivityById(

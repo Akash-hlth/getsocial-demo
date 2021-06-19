@@ -20,11 +20,9 @@ class _TimeLineScreenState extends State<TimeLineScreen> {
   Future<void> _loadActivities({bool pullToRefresh = false}) async {
     if (!pullToRefresh) setState(() => _isLoading = true);
 
-    final userFeed =
-        _client.flatFeed('timeline', widget.streamUser.id!); //Modified
+    final userFeed = _client.flatFeed('timeline', widget.streamUser.id!);
     final data = await userFeed.getActivities();
     if (!pullToRefresh) _isLoading = false;
-
     setState(() => activities = data);
   }
 
@@ -62,10 +60,45 @@ class _TimeLineScreenState extends State<TimeLineScreen> {
                     separatorBuilder: (_, __) => const Divider(),
                     itemBuilder: (_, index) {
                       final activity = activities[index];
-                      return ActivityCard(activity: activity);
+                      return ActivityCard(
+                          activity: activity,
+                          likeActivity: likeActivity,
+                          getLikeCount: getLikesCount);
                     },
                   ),
       ),
     );
+  }
+
+  Future likeActivity(String activityId) async {
+    try {
+      // first the like button is added on activity Id
+      final res = await _client.reactions.add('like', activityId);
+      // print(res);
+
+    } catch (e) {
+      print('Could not Like the activity');
+      print(e);
+    }
+    print('Like Added');
+  }
+
+  Future getLikesCount(String activityId) async {
+    try {
+      // reactions are fetched for data like -> count ,latest reactions
+      // add the specific details in the flags
+      final res2 = await _client
+          .flatFeed('timeline', widget.streamUser.id!)
+          .getEnrichedActivities(flags: EnrichmentFlags().withReactionCounts());
+
+      var count = res2.firstWhere((element) => element.id == activityId);
+
+      // print('Count : ' + count.toString());
+      var likesCount = count.reactionCounts!['like'];
+      return likesCount;
+    } catch (e) {
+      print('Could not get the activity');
+      print(e);
+    }
   }
 }
