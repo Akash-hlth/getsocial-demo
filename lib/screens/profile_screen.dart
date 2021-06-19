@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:getstream_af/api/stream_api.dart';
 import 'package:getstream_af/widgets/profile_activity_card.dart';
 import 'package:getstream_af/widgets/dialog.dart';
 import 'package:stream_feed/stream_feed.dart';
@@ -186,22 +187,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (_) => AddMessageDialog(oldMsg: oldMsg),
     );
 
-    print('Updated : ' + msgUpdated.toString());
+    final serverClient = StreamApi().getServerClient();
 
     if (msgUpdated != null) {
-      print('ActivityId : ' + activityId);
-      print('UserId : ' + widget.streamUser.id!);
-      print(_client.currentUser!.userId);
-
-      final userFeed1 = _client.flatFeed('user', _client.currentUser!.userId);
+      final userFeed1 =
+          serverClient.flatFeed('user', _client.currentUser!.userId);
 
       try {
-        final res = await userFeed1.updateActivityById(
+        await userFeed1.updateActivityById(
           id: activityId,
           set: {'text': msgUpdated},
         );
-        print('Update Result : ');
-        print(res);
         _loadActivities();
       } catch (e) {
         print("Error Updating");

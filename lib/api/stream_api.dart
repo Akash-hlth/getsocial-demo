@@ -2,7 +2,7 @@ import 'package:getstream_af/config/config.dart';
 import 'package:stream_feed/stream_feed.dart';
 
 class StreamApi {
-  Future<Token> login(String user) async {
+  StreamFeedClient getServerClient() {
     // register the user at backend first
     var serverClient = StreamFeedClient.connect(
       Config.apiKey,
@@ -15,8 +15,12 @@ class StreamApi {
       ),
     );
 
+    return serverClient;
+  }
+
+  Future<Token> login(String user) async {
     // get the token for the frontEnd
-    final userToken = serverClient.frontendToken(user);
+    final userToken = getServerClient().frontendToken(user);
     // print(userToken);
 
     // use the token to set the user at frontEnd
