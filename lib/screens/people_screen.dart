@@ -91,7 +91,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                   final timelinefeed =
                       _client.flatFeed('timeline', widget.streamUser.id!);
                   final following = await timelinefeed.following();
-                  await timelinefeed.followers();
+                  // await timelinefeed.followers();
                   setState(() {
                     userDisplay = showUsers.following;
                     usersArr = following;
@@ -225,8 +225,11 @@ class _PeopleScreenState extends State<PeopleScreen> {
             );
 
             // selecting the userfeed streamUser wants to unfollow
+
+            // instead of user1 get the dynamic id of user
+            print(user);
             final selectedUserFeed =
-                _client.flatFeed('user', user.targetId.toString());
+                _client.flatFeed(user.target_id.toString());
 
             // add selecteduser to "unfollow" of currentUser
             await timelineUserFeed.unfollow(selectedUserFeed);
