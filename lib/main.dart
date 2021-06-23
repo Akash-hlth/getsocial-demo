@@ -3,6 +3,7 @@ import 'package:getstream_af/screens/login_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(MyApp());
 }
 
